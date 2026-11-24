@@ -17,13 +17,19 @@ test("wrangler.toml: nem tartalmaz titkot", () => {
   assert.ok(!/MIDEA_PASSWORD|ACCESS_TOKEN|MIDEA_USER/.test(t));
 });
 
-test("frontend: nincs Midea cím és nincs jelszó", () => {
+test("frontend: nincs Midea végpont vagy Worker-side Midea secret", () => {
   for (const f of ["index.html", "app.js", "config.js", "service-worker.js", "manifest.json", "style.css"]) {
     if (!existsSync(new URL(f, root))) continue;
     const t = read(f);
     assert.ok(!/appsmb|smartmidea|midea\.com|meicloud/i.test(t), `${f}: Midea cím`);
     assert.ok(!/MIDEA_PASSWORD/.test(t), `${f}: jelszó`);
   }
+
+  const app = read("app.js");
+  const worker = read("worker/index.js");
+  assert.match(app, /localStorage\.setItem\(LS\.mideaPassword/);
+  assert.match(app, /["']x-midea-password["']/);
+  assert.doesNotMatch(worker, /env\.MIDEA_/);
 });
 
 test("a service worker nem gyorsítótárazza az API hívásokat", () => {

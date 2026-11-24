@@ -67,13 +67,10 @@ Nyisd meg a `wrangler.toml`-t, és írd át: `ALLOWED_ORIGIN = "https://FELHASZN
 ## 5. Worker Secrets
 
 ```bash
-npx wrangler secret put MIDEA_USER        # Midea e-mail
-npx wrangler secret put MIDEA_PASSWORD    # Midea jelszó
-npx wrangler secret put MIDEA_REGION      # AUTO
 openssl rand -hex 32                      # ezt add meg ACCESS_TOKEN-ként
 npx wrangler secret put ACCESS_TOKEN
 ```
-Helyi fejlesztéshez `.dev.vars` fájl használható (a `.gitignore` kizárja).
+A Midea e-mail-címet, jelszót és régiót **ne add meg Cloudflare secretként**. Ezeket a PWA Beállítások ablakában kell eltárolni; a böngésző `localStorage` tárhelyén maradnak, és minden API-kéréskor HTTPS fejlécként kerülnek továbbításra a Workernek. Helyi fejlesztéshez csak a Workerhez szükséges `.dev.vars` fájl használható (a `.gitignore` kizárja).
 
 ## 6. Eszközazonosító lekérése és 7. Worker telepítése
 
@@ -81,7 +78,10 @@ Helyi fejlesztéshez `.dev.vars` fájl használható (a `.gitignore` kizárja).
 npx wrangler deploy
 curl -s https://midea-cloud-remote.FELHASZNALO.workers.dev/api/devices \
   -H "Origin: https://FELHASZNALO.github.io" \
-  -H "Authorization: Bearer AZ_ACCESS_TOKEN"
+  -H "Authorization: Bearer AZ_ACCESS_TOKEN" \
+  -H "X-Midea-User: MIDEA_EMAIL" \
+  -H "X-Midea-Password: MIDEA_JELSZO" \
+  -H "X-Midea-Region: AUTO"
 ```
 A válasz az eszközök nevét és azonosítóját adja. Ha több klímád van, mentsd el az azonosítót titokként (biztonságos tárolás):
 
@@ -96,17 +96,17 @@ Egy klíma esetén automatikusan azt használja. A frontend Beállítások ablak
 ```bash
 git add -A && git commit -m "Konfiguráció" && git push
 ```
-Első megnyitáskor a ⚙ Beállításokban add meg a Worker URL-t és az `ACCESS_TOKEN`-t (csak a telefon tárhelyében marad).
+Első megnyitáskor a ⚙ Beállításokban add meg a Worker URL-t, az `ACCESS_TOKEN`-t, valamint a Midea e-mail-címet, jelszót és régiót. Ezek az adatok csak a készülék `localStorage` tárhelyébe kerülnek.
 
 ## 9. API-tesztelés
 
 ```bash
-B=https://midea-cloud-remote.FELHASZNALO.workers.dev; O="Origin: https://FELHASZNALO.github.io"; A="Authorization: Bearer AZ_ACCESS_TOKEN"; J="Content-Type: application/json"
-curl -s $B/api/status -H "$O" -H "$A"
-curl -s -X POST $B/api/power -H "$O" -H "$A" -H "$J" -d '{"on":true}'
-curl -s -X POST $B/api/mode -H "$O" -H "$A" -H "$J" -d '{"mode":"COOL"}'      # AUTO|COOL|HEAT|DRY|FAN
-curl -s -X POST $B/api/temperature -H "$O" -H "$A" -H "$J" -d '{"temperature":24}'
-curl -s -X POST $B/api/fan -H "$O" -H "$A" -H "$J" -d '{"speed":"low"}'       # vagy {"level":40}
+B=https://midea-cloud-remote.FELHASZNALO.workers.dev; O="Origin: https://FELHASZNALO.github.io"; A="Authorization: Bearer AZ_ACCESS_TOKEN"; U="X-Midea-User: MIDEA_EMAIL"; P="X-Midea-Password: MIDEA_JELSZO"; R="X-Midea-Region: AUTO"; J="Content-Type: application/json"
+curl -s $B/api/status -H "$O" -H "$A" -H "$U" -H "$P" -H "$R"
+curl -s -X POST $B/api/power -H "$O" -H "$A" -H "$U" -H "$P" -H "$R" -H "$J" -d '{"on":true}'
+curl -s -X POST $B/api/mode -H "$O" -H "$A" -H "$U" -H "$P" -H "$R" -H "$J" -d '{"mode":"COOL"}'      # AUTO|COOL|HEAT|DRY|FAN
+curl -s -X POST $B/api/temperature -H "$O" -H "$A" -H "$U" -H "$P" -H "$R" -H "$J" -d '{"temperature":24}'
+curl -s -X POST $B/api/fan -H "$O" -H "$A" -H "$U" -H "$P" -H "$R" -H "$J" -d '{"speed":"low"}'       # vagy {"level":40}
 ```
 Válasz: `{"ok":true,"data":…}` vagy `{"ok":false,"error":{"code","message"}}`.
 
@@ -126,4 +126,4 @@ Offline módban csak a felület töltődik be; a vezérléshez internet kell.
 
 ## Biztonság röviden
 
-Titkok kizárólag Cloudflare Secrets-ben; Bearer token időzítés-biztos összehasonlítással; csak a konfigurált Pages origin engedélyezett (POST-hoz kötelező); szigorú bemenet-ellenőrzés; a Worker csak 6 rögzített Midea végpontot és `*.appsmb.com` / `*.smartmidea.net` gazdát hívhat; titok nem kerül naplóba vagy válaszba.
+A Midea fiók e-mail-címe, jelszava és régiója kizárólag a készülék `localStorage` tárhelyében van eltárolva; a Worker kérésenként kapja meg, nem tartja őket Cloudflare secretként. Az `ACCESS_TOKEN` Cloudflare Secretként is és a készüléken is szükséges; a Bearer token időzítés-biztos összehasonlítással ellenőrzött. Csak a konfigurált Pages origin engedélyezett (POST-hoz kötelező), az API szigorúan ellenőrzi a bemenetet, és a Worker csak 6 rögzített Midea végpontot és `*.appsmb.com` / `*.smartmidea.net` gazdát hívhat. Jelszó vagy token nem kerül naplóba vagy API-válaszba.

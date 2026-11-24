@@ -7,7 +7,7 @@ workers_dev = true
 
 [vars]
 # A GitHub Pages eredete (útvonal nélkül!), pl. https://FELHASZNALO.github.io
-ALLOWED_ORIGIN = "https://FELHASZNALO.github.io"
+ALLOWED_ORIGIN = "https://iasatan.github.io"
 
-# Titkok (NEM ide kerülnek, hanem `wrangler secret put`):
-# MIDEA_USER, MIDEA_PASSWORD, MIDEA_REGION, ACCESS_TOKEN, (opcionális) APPLIANCE_ID
+# Titokként csak ACCESS_TOKEN és opcionálisan APPLIANCE_ID kerülhet ide `wrangler secret put` segítségével.
+# A Midea e-mail, jelszó és régió a készülék localStorage tárhelyéből érkezik minden kérésben.

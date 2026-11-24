@@ -2,7 +2,10 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const LS = { token: "klima.token", base: "klima.base", device: "klima.device", theme: "klima.theme" };
+  const LS = {
+    token: "klima.token", base: "klima.base", device: "klima.device", theme: "klima.theme",
+    mideaUser: "klima.mideaUser", mideaPassword: "klima.mideaPassword", mideaRegion: "klima.mideaRegion",
+  };
   const MODE_HU = { AUTO: "Automata", COOL: "Hűtés", HEAT: "Fűtés", DRY: "Párátlanítás", FAN: "Ventilátor" };
   const FAN_HU = { auto: "Automata", silent: "Csendes", low: "Alacsony", medium: "Közepes", high: "Magas", max: "Maximum" };
   const SWING_HU = { off: "Ki", vertical: "Függőleges", horizontal: "Vízszintes", both: "Mindkettő", unknown: "Ismeretlen" };
@@ -30,9 +33,17 @@
     if (!navigator.onLine) throw new Error("Nincs internetkapcsolat.");
     const base = apiBase();
     const token = get(LS.token);
+    const mideaUser = get(LS.mideaUser);
+    const mideaPassword = get(LS.mideaPassword);
     if (!base || base.includes("FELHASZNALO")) throw new Error("Állítsd be a Worker URL-t a ⚙ Beállításokban.");
     if (!token) throw new Error("Add meg a hozzáférési tokent a ⚙ Beállításokban.");
-    const headers = { authorization: `Bearer ${token}` };
+    if (!mideaUser || !mideaPassword) throw new Error("Add meg a Midea e-mail-címet és jelszót a ⚙ Beállításokban.");
+    const headers = {
+      authorization: `Bearer ${token}`,
+      "x-midea-user": mideaUser,
+      "x-midea-password": mideaPassword,
+      "x-midea-region": get(LS.mideaRegion) || "AUTO",
+    };
     const dev = get(LS.device);
     if (dev) headers["x-appliance-id"] = dev;
     if (body !== undefined) headers["content-type"] = "application/json";
@@ -172,6 +183,9 @@
   $("settings-btn").addEventListener("click", () => {
     $("cfg-base").value = get(LS.base) || (window.MIDEA_CONFIG && window.MIDEA_CONFIG.apiBase) || "";
     $("cfg-token").value = get(LS.token);
+    $("cfg-midea-user").value = get(LS.mideaUser);
+    $("cfg-midea-password").value = get(LS.mideaPassword);
+    $("cfg-midea-region").value = get(LS.mideaRegion) || "AUTO";
     $("cfg-devices-info").textContent = "";
     const sel = $("cfg-device");
     sel.replaceChildren(new Option("Automatikus", ""));
@@ -182,6 +196,9 @@
   $("cfg-load-devices").addEventListener("click", async () => {
     localStorage.setItem(LS.base, $("cfg-base").value.trim());
     localStorage.setItem(LS.token, $("cfg-token").value.trim());
+    localStorage.setItem(LS.mideaUser, $("cfg-midea-user").value.trim());
+    localStorage.setItem(LS.mideaPassword, $("cfg-midea-password").value);
+    localStorage.setItem(LS.mideaRegion, $("cfg-midea-region").value.trim() || "AUTO");
     const info = $("cfg-devices-info");
     info.textContent = "Betöltés…";
     try {
@@ -201,6 +218,9 @@
     if (e.submitter && e.submitter.value === "save") {
       localStorage.setItem(LS.base, $("cfg-base").value.trim());
       localStorage.setItem(LS.token, $("cfg-token").value.trim());
+      localStorage.setItem(LS.mideaUser, $("cfg-midea-user").value.trim());
+      localStorage.setItem(LS.mideaPassword, $("cfg-midea-password").value);
+      localStorage.setItem(LS.mideaRegion, $("cfg-midea-region").value.trim() || "AUTO");
       localStorage.setItem(LS.device, $("cfg-device").value);
       state = null;
       render();
@@ -231,6 +251,6 @@
   }
 
   render();
-  if (get(LS.token)) refresh();
-  else showError("Első indítás: nyisd meg a ⚙ Beállításokat, és add meg a Worker URL-t és a tokent.");
+  if (get(LS.token) && get(LS.mideaUser) && get(LS.mideaPassword)) refresh();
+  else showError("Első indítás: nyisd meg a ⚙ Beállításokat, és add meg a Worker, token és Midea fiók adatait.");
 })();

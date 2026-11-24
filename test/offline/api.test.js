@@ -7,13 +7,14 @@ import { ACCOUNT, APPLIANCE_ID, PASSWORD, createMockCloud } from "./mock-cloud.j
 
 const ORIGIN = "https://user.github.io";
 const TOKEN = "t".repeat(40);
-const env = { MIDEA_USER: ACCOUNT, MIDEA_PASSWORD: PASSWORD, MIDEA_REGION: "AUTO", ACCESS_TOKEN: TOKEN, ALLOWED_ORIGIN: ORIGIN };
+const env = { ACCESS_TOKEN: TOKEN, ALLOWED_ORIGIN: ORIGIN };
+const accountHeaders = { "x-midea-user": ACCOUNT, "x-midea-password": PASSWORD, "x-midea-region": "AUTO" };
 
 function setup(opts = {}, envOverride = {}) {
   const mock = createMockCloud(opts);
   const app = createApp({ fetchImpl: mock.fetch });
   const call = async (method, path, body, { origin = ORIGIN, token = TOKEN, headers = {} } = {}) => {
-    const h = { ...headers };
+    const h = { ...accountHeaders, ...headers };
     if (origin) h.origin = origin;
     if (token) h.authorization = `Bearer ${token}`;
     if (body !== undefined) h["content-type"] = "application/json";
@@ -107,7 +108,7 @@ test("hibás hitelesítés (Midea jelszó)", async () => {
   const mock = createMockCloud();
   mock.password = "mas-jelszo";
   const app = createApp({ fetchImpl: mock.fetch });
-  const res = await app(new Request("https://worker.test/api/devices", { headers: { origin: ORIGIN, authorization: `Bearer ${TOKEN}` } }), env);
+  const res = await app(new Request("https://worker.test/api/devices", { headers: { origin: ORIGIN, authorization: `Bearer ${TOKEN}`, ...accountHeaders } }), env);
   const json = await res.json();
   assert.equal(res.status, 502);
   assert.equal(json.error.code, "CLOUD_AUTH_FAILED");
@@ -154,11 +155,20 @@ test("CORS: csak a konfigurált eredet, preflight", async () => {
   assert.equal(no.res.headers.get("access-control-allow-origin"), null);
 });
 
-test("hiányzó konfiguráció: 500, titok nélkül", async () => {
-  const { call } = setup({}, { MIDEA_PASSWORD: "" });
+test("hiányzó Worker konfiguráció: 500, titok nélkül", async () => {
+  const { call } = setup({}, { ACCESS_TOKEN: "" });
   const { res, json } = await call("GET", "/api/status");
   assert.equal(res.status, 500);
-  assert.match(json.error.message, /MIDEA_PASSWORD/);
+  assert.match(json.error.message, /ACCESS_TOKEN/);
+});
+
+test("hiányzó készüléki Midea hitelesítés: 400", async () => {
+  const { call } = setup();
+  const { res, json } = await call("GET", "/api/status", undefined, {
+    headers: { "x-midea-user": "", "x-midea-password": "" },
+  });
+  assert.equal(res.status, 400);
+  assert.equal(json.error.code, "MIDEA_CREDENTIALS_REQUIRED");
 });
 
 test("a válaszokban nincs jelszó vagy token", async () => {

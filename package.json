@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Midea Breezeless távirányító: GitHub Pages + Cloudflare Workers",
   "scripts": {
-    "test": "node --test test/offline/",
-    "test:live": "node --test test/live/",
+    "test": "node --test test/offline/api.test.js test/offline/parity.test.js test/offline/repo.test.js",
+    "test:live": "node --test test/live/live.test.js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"
   },

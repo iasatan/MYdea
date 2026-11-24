@@ -71,12 +71,15 @@
       <h2>Beállítások</h2>
       <label>Worker URL<input id="cfg-base" type="url" inputmode="url" autocomplete="off" placeholder="https://…workers.dev"></label>
       <label>Hozzáférési token (ACCESS_TOKEN)<input id="cfg-token" type="password" autocomplete="off"></label>
+      <label>Midea e-mail-cím<input id="cfg-midea-user" type="email" autocomplete="username"></label>
+      <label>Midea jelszó<input id="cfg-midea-password" type="password" autocomplete="current-password"></label>
+      <label>Midea régió vagy gateway URL<input id="cfg-midea-region" type="text" autocomplete="off" value="AUTO" placeholder="AUTO"></label>
       <label>Klíma
         <select id="cfg-device"><option value="">Automatikus</option></select>
       </label>
       <button type="button" class="secondary" id="cfg-load-devices">Eszközök lekérése</button>
       <p class="hint" id="cfg-devices-info"></p>
-      <p class="hint">A token csak ezen a készüléken tárolódik. A Midea jelszó soha nem kerül ide.</p>
+      <p class="hint">A Midea adatok csak ezen a készülék localStorage tárhelyén kerülnek tárolásra, és HTTPS kérésben mennek a Workeren át a Midea Cloudhoz. A Worker nem tárolja őket titokként.</p>
       <div class="dialog-actions">
         <button value="cancel" class="secondary">Mégse</button>
         <button value="save" id="cfg-save">Mentés</button>

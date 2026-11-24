@@ -8,7 +8,7 @@ import { MideaCloud, MideaCloudError } from "./midea-cloud.js";
 const MAX_BODY_BYTES = 1024;
 const MODES = ["AUTO", "COOL", "HEAT", "DRY", "FAN"];
 const FAN_NAMES = ["auto", "silent", "low", "medium", "high", "max"];
-const REQUIRED_ENV = ["MIDEA_USER", "MIDEA_PASSWORD", "ACCESS_TOKEN", "ALLOWED_ORIGIN"];
+const REQUIRED_ENV = ["ACCESS_TOKEN", "ALLOWED_ORIGIN"];
 
 function json(status, body, extraHeaders = {}) {
   return new Response(JSON.stringify(body), {
@@ -23,7 +23,7 @@ function corsHeaders(origin) {
   return {
     "access-control-allow-origin": origin,
     "access-control-allow-methods": "GET, POST, OPTIONS",
-    "access-control-allow-headers": "authorization, content-type, x-appliance-id",
+    "access-control-allow-headers": "authorization, content-type, x-appliance-id, x-midea-user, x-midea-password, x-midea-region",
     "access-control-max-age": "600",
     vary: "Origin",
   };
@@ -109,22 +109,18 @@ export const validators = {
 };
 
 export function createApp({ fetchImpl, now } = {}) {
-  let cloud = null;
-  let cloudKey = "";
-  let service = null;
-
-  function serviceFor(env) {
-    // A munkamenet az isolate élettartamáig él. A kulcs csak a konfiguráció változását érzékeli.
-    const key = [env.MIDEA_USER, env.MIDEA_PASSWORD, env.MIDEA_REGION || ""].join("\u0000");
-    if (!service || key !== cloudKey) {
-      cloud = new MideaCloud({ account: env.MIDEA_USER, password: env.MIDEA_PASSWORD, region: env.MIDEA_REGION, fetchImpl, now });
-      service = new DeviceService({ cloud, defaultApplianceId: env.APPLIANCE_ID, now });
-      cloudKey = key;
-    }
-    return service;
+  function serviceFor(env, credentials) {
+    const cloud = new MideaCloud({
+      account: credentials.user,
+      password: credentials.password,
+      region: credentials.region,
+      fetchImpl,
+      now,
+    });
+    return new DeviceService({ cloud, defaultApplianceId: env.APPLIANCE_ID, now });
   }
 
-  async function route(request, env, url, requestedId) {
+  async function route(request, env, url, requestedId, credentials) {
     const path = url.pathname;
     const method = request.method;
     const routes = {
@@ -134,7 +130,7 @@ export function createApp({ fetchImpl, now } = {}) {
     if (!(path in routes)) throw new ApiError(404, "NOT_FOUND", "Ismeretlen végpont.");
     if (routes[path] !== method) throw new ApiError(405, "METHOD_NOT_ALLOWED", "Nem engedélyezett HTTP metódus.");
 
-    const svc = serviceFor(env);
+    const svc = serviceFor(env, credentials);
     switch (path) {
       case "/api/devices": return svc.listDevices(requestedId);
       case "/api/status": return svc.getStatus(requestedId);
@@ -176,7 +172,16 @@ export function createApp({ fetchImpl, now } = {}) {
       const requestedId = request.headers.get("x-appliance-id") || url.searchParams.get("deviceId") || "";
       if (requestedId && !/^\d{1,20}$/.test(requestedId)) throw new ApiError(400, "INVALID_DEVICE_ID", "Érvénytelen eszközazonosító.");
 
-      const data = await route(request, env, url, requestedId);
+      const credentials = {
+        user: (request.headers.get("x-midea-user") || "").trim(),
+        password: request.headers.get("x-midea-password") || "",
+        region: (request.headers.get("x-midea-region") || "AUTO").trim(),
+      };
+      if (!credentials.user || !credentials.password) {
+        throw new ApiError(400, "MIDEA_CREDENTIALS_REQUIRED", "A Midea e-mail-cím és jelszó a készülék beállításaiban kötelező.");
+      }
+
+      const data = await route(request, env, url, requestedId, credentials);
       return json(200, { ok: true, data }, cors);
     } catch (e) {
       const m = mapError(e);
