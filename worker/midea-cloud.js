@@ -34,11 +34,12 @@ const NOT_OWNER_CODE = 3201;
 
 export class MideaCloudError extends Error {
   /** kind: network | timeout | http | invalid-response | auth | session | not-owner | api | protocol */
-  constructor(kind, message, cloudCode = null) {
+  constructor(kind, message, cloudCode = null, networkCode = null) {
     super(message);
     this.name = "MideaCloudError";
     this.kind = kind;
     this.cloudCode = cloudCode;
+    this.networkCode = networkCode;
   }
 }
 
@@ -151,7 +152,9 @@ export class MideaCloud {
       res = await this.fetch(url, { method: "POST", headers, body, signal: ctrl.signal, redirect: "error" });
     } catch (e) {
       if (e && e.name === "AbortError") throw new MideaCloudError("timeout", "A Midea Cloud nem válaszolt időben.");
-      throw new MideaCloudError("network", "A Midea Cloud nem érhető el.");
+      const code = e && e.cause && typeof e.cause.code === "string" ? e.cause.code : "UNKNOWN";
+      const networkCode = /^[A-Z0-9_]{1,40}$/.test(code) ? code : "UNKNOWN";
+      throw new MideaCloudError("network", "A Midea Cloud nem érhető el.", null, networkCode);
     } finally {
       clearTimeout(timer);
     }

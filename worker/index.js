@@ -186,7 +186,7 @@ export function createApp({ fetchImpl, now } = {}) {
     } catch (e) {
       const m = mapError(e);
       // Csak a hiba kódját naplózzuk, soha nem adatot, jelszót vagy tokent.
-      if (m.status >= 500) console.error(`api-error ${m.code} ${e && e.kind ? e.kind : ""} ${e && e.cloudCode ? e.cloudCode : ""}`.trim());
+      if (m.status >= 500) console.error(`api-error ${m.code} ${e && e.kind ? e.kind : ""} ${e && e.cloudCode ? e.cloudCode : ""} ${e && e.networkCode ? e.networkCode : ""}`.trim());
       return fail(m.status, m.code, m.message, cors);
     }
   };
