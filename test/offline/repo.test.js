@@ -36,3 +36,9 @@ test("a service worker nem gyorsítótárazza az API hívásokat", () => {
   if (!existsSync(new URL("service-worker.js", root))) return;
   assert.match(read("service-worker.js"), /\/api\//);
 });
+
+test("GitHub Pages: a deployment megvárja az artifact feltöltését", () => {
+  const workflow = read(".github/workflows/pages.yml");
+  assert.match(workflow, /  build:\n[\s\S]*?uses: actions\/upload-pages-artifact@v3[\s\S]*?  deploy:\n/);
+  assert.match(workflow, /  deploy:\n    needs: build\n[\s\S]*?uses: actions\/deploy-pages@v4/);
+});
