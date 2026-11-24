@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115" id="theme-color">
+  <meta name="color-scheme" content="dark light">
+  <title>Klíma távirányító</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="offline-banner" class="banner warn" hidden>Nincs internetkapcsolat – a klíma most nem vezérelhető.</div>
+  <div id="error-banner" class="banner err" role="alert" hidden></div>
+  <div id="loader" class="loader" hidden aria-label="Betöltés"></div>
+
+  <main>
+    <header class="top">
+      <div>
+        <h1 id="device-name">Klíma</h1>
+        <p class="conn"><span id="conn-dot" class="dot"></span><span id="conn-text">Ismeretlen</span></p>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="theme-btn" aria-label="Téma váltása">◐</button>
+        <button class="icon-btn" id="settings-btn" aria-label="Beállítások">⚙</button>
+      </div>
+    </header>
+
+    <section class="card temps">
+      <div class="temp-block"><span class="label">Szobahőmérséklet</span><span class="big" id="indoor">–</span></div>
+      <div class="temp-block"><span class="label">Beállított</span><span class="big accent" id="target-view">–</span></div>
+    </section>
+
+    <button id="power-btn" class="power" aria-pressed="false" disabled><span class="power-icon">⏻</span><span id="power-text">Bekapcsolás</span></button>
+
+    <section class="card">
+      <h2>Hőmérséklet</h2>
+      <div class="stepper">
+        <button class="step" id="temp-minus" aria-label="Csökkentés" disabled>−</button>
+        <div class="stepper-value"><span id="target">–</span><small>°C</small></div>
+        <button class="step" id="temp-plus" aria-label="Növelés" disabled>+</button>
+      </div>
+      <p class="hint" id="range-hint"></p>
+    </section>
+
+    <section class="card">
+      <h2>Üzemmód</h2>
+      <div class="grid" id="modes" role="radiogroup" aria-label="Üzemmód"></div>
+    </section>
+
+    <section class="card">
+      <h2>Ventilátor</h2>
+      <div class="grid" id="fans" role="radiogroup" aria-label="Ventilátorsebesség"></div>
+      <div id="fan-custom" hidden>
+        <label class="hint" for="fan-slider">Egyedi fokozat: <b id="fan-level">–</b>%</label>
+        <input type="range" id="fan-slider" min="1" max="100" step="1">
+      </div>
+    </section>
+
+    <section class="card info">
+      <div class="row"><span>Lamellaállás</span><b id="swing">–</b></div>
+      <div class="row"><span>Utolsó sikeres lekérdezés</span><b id="last-ok">–</b></div>
+      <button class="secondary" id="refresh-btn">Állapot frissítése</button>
+    </section>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>Beállítások</h2>
+      <label>Worker URL<input id="cfg-base" type="url" inputmode="url" autocomplete="off" placeholder="https://…workers.dev"></label>
+      <label>Hozzáférési token (ACCESS_TOKEN)<input id="cfg-token" type="password" autocomplete="off"></label>
+      <label>Klíma
+        <select id="cfg-device"><option value="">Automatikus</option></select>
+      </label>
+      <button type="button" class="secondary" id="cfg-load-devices">Eszközök lekérése</button>
+      <p class="hint" id="cfg-devices-info"></p>
+      <p class="hint">A token csak ezen a készüléken tárolódik. A Midea jelszó soha nem kerül ide.</p>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary">Mégse</button>
+        <button value="save" id="cfg-save">Mentés</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

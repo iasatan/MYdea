@@ -1,0 +1,43 @@
+:root{--bg:#f3f5f9;--card:#fff;--text:#12151c;--muted:#6b7385;--accent:#0a84ff;--on:#12b76a;--off:#8b93a5;--err:#e5484d;--line:#e4e8f0;--radius:20px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1115;--card:#1a1d25;--text:#f2f4f8;--muted:#98a1b3;--accent:#4da3ff;--line:#2a2f3a}}
+:root[data-theme=dark]{--bg:#0f1115;--card:#1a1d25;--text:#f2f4f8;--muted:#98a1b3;--accent:#4da3ff;--line:#2a2f3a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+main{max-width:480px;margin:0 auto;padding:16px;display:grid;gap:14px}
+h1{margin:0;font-size:1.4rem}h2{margin:0 0 12px;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;padding-top:env(safe-area-inset-top)}
+.top-actions{display:flex;gap:8px}
+.conn{margin:4px 0 0;color:var(--muted);font-size:.9rem;display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--off)}.dot.online{background:var(--on)}.dot.offline{background:var(--err)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.temps{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.temp-block{display:grid;gap:2px}.label{color:var(--muted);font-size:.8rem}
+.big{font-size:2.4rem;font-weight:600;font-variant-numeric:tabular-nums}.accent{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.45;cursor:not-allowed}
+.icon-btn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:1.2rem}
+.power{display:flex;align-items:center;justify-content:center;gap:12px;min-height:76px;border-radius:var(--radius);border:2px solid var(--off);background:var(--card);font-size:1.2rem;font-weight:600}
+.power-icon{font-size:1.8rem}
+.power[aria-pressed=true]{background:var(--on);border-color:var(--on);color:#fff}
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.step{width:76px;height:76px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-size:2.2rem;line-height:1}
+.stepper-value{font-size:3.6rem;font-weight:600;font-variant-numeric:tabular-nums}.stepper-value small{font-size:1.2rem;color:var(--muted);margin-left:2px}
+.hint{color:var(--muted);font-size:.85rem;margin:10px 0 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.chip{min-height:52px;border-radius:14px;border:1px solid var(--line);background:var(--bg);padding:8px}
+.chip[aria-checked=true]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+input[type=range]{width:100%;min-height:44px;accent-color:var(--accent)}
+.info .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.secondary{min-height:48px;width:100%;margin-top:12px;border-radius:14px;border:1px solid var(--line);background:var(--bg)}
+.banner{position:sticky;top:0;z-index:5;padding:10px 16px;text-align:center;font-size:.9rem;color:#fff}
+.banner.warn{background:#b7791f}.banner.err{background:var(--err)}
+.loader{position:fixed;top:0;left:0;right:0;height:3px;z-index:10;background:linear-gradient(90deg,transparent,var(--accent),transparent);background-size:50% 100%;background-repeat:no-repeat;animation:l 1s linear infinite}
+@keyframes l{from{background-position:-50% 0}to{background-position:150% 0}}
+dialog{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);color:var(--text);width:min(92vw,440px);padding:20px}
+dialog::backdrop{background:#0008}
+dialog label{display:grid;gap:6px;margin:12px 0;font-size:.9rem;color:var(--muted)}
+dialog input,dialog select{font:inherit;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);padding:0 12px}
+dialog button{min-height:46px;border-radius:12px;border:0;background:var(--accent);color:#fff;padding:0 18px}
+dialog .secondary{color:var(--text);border:1px solid var(--line);background:var(--bg);width:auto;margin:0}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+[hidden]{display:none!important}
