@@ -1,0 +1,13 @@
+name = "midea-cloud-remote"
+main = "worker/index.js"
+compatibility_date = "2025-01-01"
+workers_dev = true
+
+# Nincs [triggers] / cron szakasz: a Worker csak kézi HTTP kérésre fut.
+
+[vars]
+# A GitHub Pages eredete (útvonal nélkül!), pl. https://FELHASZNALO.github.io
+ALLOWED_ORIGIN = "https://FELHASZNALO.github.io"
+
+# Titkok (NEM ide kerülnek, hanem `wrangler secret put`):
+# MIDEA_USER, MIDEA_PASSWORD, MIDEA_REGION, ACCESS_TOKEN, (opcionális) APPLIANCE_ID

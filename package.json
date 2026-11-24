@@ -1,0 +1,16 @@
+{
+  "name": "midea-cloud-remote",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Midea Breezeless távirányító: GitHub Pages + Cloudflare Workers",
+  "scripts": {
+    "test": "node --test test/offline/",
+    "test:live": "node --test test/live/",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
