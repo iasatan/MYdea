@@ -1,3 +1,3 @@
-// A Worker URL-je. Állítsd be telepítés után (vagy add meg a Beállítások ablakban).
+// A telepített Worker alap URL-je. A készülék Beállítások ablakában felülírható.
 // Titkot (jelszó, token) SOHA ne írj ide: az ACCESS_TOKEN a Beállításokban kerül a készülék tárhelyébe.
-window.MIDEA_CONFIG = { apiBase: "https://midea-cloud-remote.FELHASZNALO.workers.dev" };
+window.MIDEA_CONFIG = { apiBase: "https://midea-cloud-remote.satanadam.workers.dev" };
